@@ -91,13 +91,27 @@ RandomForestRegressor(
 
 # Feature Importance
 
-The Random Forest model identified the most influential features for predicting medical insurance expenses.
+The Random Forest model identified the following features as the most influential for predicting medical insurance expenses.
+
+| Feature | Importance |
+|---------|-----------:|
+| Smoker | 59.93% |
+| BMI | 21.43% |
+| Age | 13.77% |
+| Children | 2.33% |
+| Sex | 0.73% |
+| Region (Southeast) | 0.67% |
+| Region (Northwest) | 0.66% |
+| Region (Southwest) | 0.48% |
+
+The results indicate that **Smoking Status**, **BMI**, and **Age** contributed the most to the model's predictions, while **Sex** and **Region** had relatively little influence.
 
 
 ---
 
 # Key Insights
 
-- The Random Forest regressor explained approximately **88%** of the variance in medical insurance expenses.
-- Smoking status, BMI, and age were expected to be the most influential factors affecting medical costs.
-- The model effectively captured the complex, non-linear relationships between patient characteristics and insurance expenses.
+- The Random Forest regressor explained approximately **88%** of the variance in medical insurance expenses (**R² = 0.8813**).
+- **Smoking status** was by far the strongest predictor, accounting for nearly **60%** of the model's total feature importance.
+- **BMI** and **Age** also had a significant impact on insurance costs, while **Sex** and **Region** contributed relatively little to the predictions.
+- The model effectively captured the complex relationships between patient characteristics and medical expenses, resulting in low prediction errors (**MAE = 2627.26**, **RMSE = 4670.16**).
