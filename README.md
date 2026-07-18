@@ -87,9 +87,12 @@ The predictions from all trees are combined:
 
 This makes the final prediction more reliable than relying on a single Decision Tree.
 
+---
+
 ### 5. Better Generalization
 
 Since every tree is trained on different data and different feature subsets, Random Forest reduces overfitting and usually generalizes better to unseen data than a single Decision Tree.
+
 ---
 
 # Advantages
