@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from model import all_skills, get_recommendations
+from Project.model.model import all_skills, get_recommendations
 
 app = Flask(__name__)
 
