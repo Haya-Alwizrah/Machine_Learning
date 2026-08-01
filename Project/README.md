@@ -1,28 +1,74 @@
 # AI Job Recommendation System
 
-An AI-powered job recommendation system that recommends suitable job titles based on a user's skills and identifies the key skills they should learn to improve their career opportunities.
+An AI-powered job recommendation system that recommends suitable job titles based on a user's skills and identifies the most important skills they should acquire to improve their career opportunities.
 
-The system applies **TF-IDF vectorization** to represent job skills and uses a **K-Nearest Neighbors (KNN)** recommendation model to retrieve the most relevant job titles. For each recommendation, it also performs a **Skill Gap Analysis** by comparing the user's skills with those commonly required in similar job postings.
+The project covers the complete machine learning workflow, starting from data exploration and preprocessing, followed by model development and evaluation, and finally deploying the recommendation system through an interactive Flask web application.
 
-## Features
+---
 
-- Recommend the **Top 10** matching job titles.
-- Display a **similarity score** for each recommendation.
-- Perform **Skill Gap Analysis** for every recommended job.
-- Interactive web interface built with **Flask**.
-- Fast inference using pre-trained and serialized models.
+## Project Workflow
+
+### 1. Exploratory Data Analysis (EDA)
+
+The project begins with exploring the LinkedIn Jobs and Skills dataset to better understand the data distribution and quality. During this phase:
+
+- Explored job titles and skill frequencies.
+- Analyzed the distribution of skills across different jobs.
+- Cleaned noisy and duplicated skill names.
+- Applied skill normalization using regex, semantic similarity, and fuzzy matching.
+- Produced a clean dataset for model training.
+
+---
+
+### 2. Model Development
+
+After preprocessing, multiple recommendation approaches were implemented and compared, including:
+
+- TF-IDF + Cosine Similarity
+- TF-IDF + K-Nearest Neighbors (KNN)
+- TF-IDF + Truncated SVD + MiniBatch K-Means
+
+Each model was evaluated using:
+
+- Precision@5
+- Mean Reciprocal Rank (MRR)
+
+The K-Nearest Neighbors (KNN) model achieved the best overall performance and was selected for deployment.
+
+---
+
+### 3. Web Application
+
+The selected model was integrated into a Flask web application where users can:
+
+- Enter their skills.
+- Receive the Top 10 recommended job titles.
+- View the similarity score for each recommendation.
+- Discover missing skills (Skill Gap Analysis) for every recommended job.
+
+---
+
+## Dataset
+
+The project uses the **LinkedIn Jobs and Skills** dataset, which contains job postings along with their associated skills.
+
+After preprocessing, the dataset was cleaned, normalized, and transformed into a structured format suitable for machine learning.
+
+---
 
 ## Technologies
 
 - Python
 - Flask
-- Scikit-learn
 - Pandas
+- Scikit-learn
 - TF-IDF Vectorizer
 - K-Nearest Neighbors (KNN)
 - HTML
 - CSS
 - JavaScript
+
+---
 
 ## Project Structure
 
@@ -45,6 +91,8 @@ Project/
     ├── templates/
     └── app.py
 ```
+
+---
 
 ## Run the Project
 
