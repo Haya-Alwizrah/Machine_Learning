@@ -3,22 +3,18 @@
 {% block title %}Try the Model{% endblock %}
 
 {% block content %}
-<a href="/" class="btn-back">&larr; Back to Home</a>
+<a href="/" class="btn-back">Back to Home</a>
 <h2>Enter Your Skills</h2>
 <p>Select your skills from the list or type a new skill and click "Add":</p>
 
-<div class="input-group">
-    <input list="skills-list" id="skillInput" placeholder="Type a skill (e.g., python)...">
-    <datalist id="skills-list">
-        {% for skill in available_skills %}
-        <option value="{{ skill }}">
-        {% endfor %}
-    </datalist>
-    <button class="btn btn-primary" onclick="addSkill()" style="margin: 0; border-radius: 5px;">Add</button>
+<div class="input-group" style="position: relative;">
+    <input type="text" id="skillInput" placeholder="Type a skill (e.g., python)..." autocomplete="off">
+    <button class="btn btn-primary" onclick="addSkill()" style="margin: 0; border-radius: 5px; z-index: 2;">Add</button>
+    
+    <div id="suggestionsBox" class="suggestions-box"></div>
 </div>
 
 <div class="tags-container" id="tagsContainer">
-    <!-- Skills will be added here -->
 </div>
 
 <button id="submitBtn" class="btn btn-secondary" style="width: 100%; margin: 0;" onclick="submitSkills()">Get Recommendations</button>

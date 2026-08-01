@@ -28,5 +28,9 @@ def predict():
     
     return jsonify(results)
 
+@app.route('/api/skills')
+def get_skills():
+    return jsonify(all_skills)
+
 if __name__ == '__main__':
     app.run(debug=True)

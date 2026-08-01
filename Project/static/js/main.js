@@ -1,15 +1,37 @@
+let availableSkills = [];
 let userSkills = [];
 
-function addSkill() {
-    const input = document.getElementById('skillInput');
-    const skill = input.value.trim().toLowerCase();
-    
-    if(skill && !userSkills.includes(skill)) {
-        userSkills.push(skill);
-        renderTags();
+// Fetch available skills from the server on page load
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await fetch('/api/skills');
+        availableSkills = await response.json();
+    } catch (error) {
+        console.error('Error loading skills:', error);
     }
-    input.value = ''; 
-    input.focus();
+});
+
+function renderTags() {
+    const container = document.getElementById('tagsContainer');
+    container.innerHTML = '';
+    
+    userSkills.forEach(skill => {
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        
+        const skillText = document.createTextNode(skill);
+        tag.appendChild(skillText);
+        
+        const closeBtn = document.createElement('span');
+        closeBtn.className = 'close';
+        closeBtn.innerText = 'X';
+        closeBtn.onclick = function() {
+            removeSkill(skill);
+        };
+        
+        tag.appendChild(closeBtn);
+        container.appendChild(tag);
+    });
 }
 
 function removeSkill(skill) {
@@ -17,26 +39,69 @@ function removeSkill(skill) {
     renderTags();
 }
 
-function renderTags() {
-    const container = document.getElementById('tagsContainer');
-    container.innerHTML = '';
-    userSkills.forEach(skill => {
-        const tag = document.createElement('div');
-        tag.className = 'tag';
-        tag.innerHTML = `${skill} <span class="close" onclick="removeSkill('${skill}')">X</span>`;
-        container.appendChild(tag);
-    });
+function addSkill(skillValue = null) {
+    const input = document.getElementById('skillInput');
+    const skill = skillValue || input.value.trim().toLowerCase();
+    
+    if(skill && !userSkills.includes(skill)) {
+        userSkills.push(skill);
+        renderTags();
+    }
+    input.value = ''; 
+    input.focus();
+    closeSuggestions();
 }
 
+// Custom Autocomplete Logic
 const skillInput = document.getElementById('skillInput');
+const suggestionsBox = document.getElementById('suggestionsBox');
+
 if (skillInput) {
+    skillInput.addEventListener('input', function() {
+        const val = this.value.trim().toLowerCase();
+        closeSuggestions();
+        
+        if (!val) return false;
+        
+        const matches = availableSkills.filter(s => s.toLowerCase().includes(val));
+        
+        if (matches.length > 0) {
+            suggestionsBox.style.display = 'block';
+            
+            matches.slice(0, 15).forEach(match => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = match;
+                div.onclick = function() {
+                    addSkill(match);
+                };
+                suggestionsBox.appendChild(div);
+            });
+        }
+    });
+
     skillInput.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
+            e.preventDefault();
             addSkill();
         }
     });
 }
 
+function closeSuggestions() {
+    if (suggestionsBox) {
+        suggestionsBox.innerHTML = '';
+        suggestionsBox.style.display = 'none';
+    }
+}
+
+document.addEventListener('click', function (e) {
+    if (e.target.id !== 'skillInput') {
+        closeSuggestions();
+    }
+});
+
+// Submit Logic
 async function submitSkills() {
     if(userSkills.length === 0) {
         alert("Please enter at least one skill.");
