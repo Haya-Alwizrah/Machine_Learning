@@ -10,7 +10,7 @@ import json
 os.makedirs("json", exist_ok=True)
 
 class Filtering:
-    def __init__(self, df, column, similarity_threshold=0.80, fuzzy_threshold=95, coverage_target=0.80):
+    def __init__(self, df, column, similarity_threshold=0.80, fuzzy_threshold=90, coverage_target=0.80):
         self.df = df.copy()
         self.column = column
         self.similarity_threshold = similarity_threshold
@@ -38,6 +38,7 @@ class Filtering:
         skill = re.sub(r"\b(strong|excellent|good|basic|advanced|proven|solid)\b", "", skill)
         skill = re.sub(r"\b\d+\+?\s*(years?|yrs?)\b.*", "", skill)
         skill = re.sub(r"^(ability to|experience in|experience with|knowledge of)\s+", "", skill)
+        skill = re.sub(r"[*.,;:()]+", " ", skill)
         skill = re.sub(r"\s+", " ", skill)
         skill = skill.strip()
 
@@ -98,6 +99,7 @@ class Filtering:
         self.common_values = self.values_counts[self.values_counts >= min_count].index.tolist()
 
         if self.model is None:
+            print("loding model")
             self.model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
         embeddings = self.model.encode(
@@ -137,8 +139,8 @@ class Filtering:
             matches = process.extract(
                 c,
                 canonical,
-                scorer=fuzz.ratio,
-                limit=5
+                scorer=fuzz.token_set_ratio,
+                limit=10
             )
 
             for match, score, _ in matches:
@@ -147,10 +149,10 @@ class Filtering:
                     continue
 
                 if score >= self.fuzzy_threshold:
-                    canonical = max([c, match], key=lambda x: self.values_counts[x])
+                    best = max([c, match], key=lambda x: self.values_counts[x])
 
-                    self.fuz_mapping[c] = canonical
-                    self.fuz_mapping[match] = canonical
+                    self.fuz_mapping[c] = best
+                    self.fuz_mapping[match] = best
 
     def final_mapping(self):
         self.fin_mapping = {
@@ -161,6 +163,7 @@ class Filtering:
     def run(self):
         print("start cleaning")
         self.clean()
+        print("cleaning done")
 
         if os.path.exists(self.final_file):
             print("Loading existing mappings...")

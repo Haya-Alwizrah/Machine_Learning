@@ -13,7 +13,6 @@ def details():
     return render_template('details.html')
 
 @app.route("/recommend", methods=["POST"])
-
 def recommend():
 
     data = request.get_json()
