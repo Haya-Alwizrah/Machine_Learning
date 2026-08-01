@@ -3,21 +3,34 @@ import joblib
 import pandas as pd
 import ast
 import json
+from huggingface_hub import snapshot_download
 
 # Load data and models -------------------
 
 BASE_DIR = os.path.dirname(__file__)
-MODELS_DIR = os.path.join(BASE_DIR, "models")
-DATA_DIR = os.path.join(BASE_DIR, "data")
+HF_DIR = os.path.join(BASE_DIR, "hf_files")
+# MODELS_DIR = os.path.join(BASE_DIR, "models")
+# DATA_DIR = os.path.join(BASE_DIR, "data")
 
-df = pd.read_csv(os.path.join(DATA_DIR, "clean_jobs.csv"))
+if not os.path.exists(os.path.join(HF_DIR, "KNN.pkl")):
+    print("Downloading model files from Hugging Face...")
+    snapshot_download(
+        repo_id="x-hayush/job-recommendation-model",
+        local_dir=HF_DIR,
+        local_dir_use_symlinks=False
+    )
+    print("Download completed.")
+else:
+    print("Using cached model files.")
+    
+df = pd.read_csv(os.path.join(HF_DIR, "clean_jobs.csv"))
 df["job_skills"] = df["job_skills"].apply(ast.literal_eval)
 
-tfidf = joblib.load(os.path.join(MODELS_DIR, "tfidf.pkl"))
-tfidf_matrix = joblib.load(os.path.join(MODELS_DIR, "tfidf_matrix.pkl"))
-nn = joblib.load(os.path.join(MODELS_DIR, "KNN.pkl"))
+tfidf = joblib.load(os.path.join(HF_DIR, "tfidf.pkl"))
+tfidf_matrix = joblib.load(os.path.join(HF_DIR, "tfidf_matrix.pkl"))
+nn = joblib.load(os.path.join(HF_DIR, "KNN.pkl"))
 
-with open(os.path.join(DATA_DIR, "skills.json"), "r", encoding="utf-8") as f:
+with open(os.path.join(HF_DIR, "skills.json"), "r", encoding="utf-8") as f:
     skill_list = json.load(f)
 
 # -----------------------------------------
