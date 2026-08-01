@@ -1,5 +1,10 @@
+import os
+import sys
 from flask import Flask, render_template, request, jsonify
-from phase2_Model.model import recommend_jobs
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+from phase2_Model.model import recommend_jobs, skill_list
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -40,6 +45,10 @@ def recommend():
             "success": False,
             "message": str(e)
         }), 500
+
+@app.route("/skills")
+def get_skills():
+    return jsonify(skill_list)
 
 # ----------------------------------------
 if __name__ == "__main__":
