@@ -1,27 +1,46 @@
 from flask import Flask, render_template, request, jsonify
-from Project.phase2_Model.model import recommend_jobs
+from phase2_Model.model import recommend_jobs
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 # --- Routes ---
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/details')
-def details():
-    return render_template('details.html')
-
+# ----------------------------------------
 @app.route("/recommend", methods=["POST"])
 def recommend():
 
     data = request.get_json()
 
-    skills = data["skills"]
+    if not data:
+        return jsonify({
+            "success": False,
+            "message": "No data received."
+        }), 400
 
-    results = recommend_jobs(skills)
+    skills = data.get("skills", [])
 
-    return jsonify(results)
+    if len(skills) == 0:
+        return jsonify({
+            "success": False,
+            "message": "Please enter at least one skill."
+        }), 400
 
-if __name__ == '__main__':
+    try:
+        recommendations = recommend_jobs(user_skills=skills, top_n=10, gap_top_n=5, n_similar=30)
+        return jsonify({
+            "success": True,
+            "recommendations": recommendations
+        })
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
+# ----------------------------------------
+if __name__ == "__main__":
     app.run(debug=True)

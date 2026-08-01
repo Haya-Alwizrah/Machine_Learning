@@ -5,6 +5,7 @@ import joblib
 import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
+import json
 
 # Load dataset ---------------------------------------------------------
 
@@ -54,6 +55,14 @@ os.makedirs(MODELS_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 
 df.to_csv(os.path.join(DATA_DIR, "clean_jobs.csv"), index=False)
+skills = sorted({
+    skill
+    for skills in df["job_skills"]
+    for skill in skills
+})
+with open(os.path.join(DATA_DIR, "skills.json"), "w", encoding="utf-8") as f:
+    json.dump(skills, f, ensure_ascii=False, indent=4)
+
 joblib.dump(tfidf, os.path.join(MODELS_DIR, "tfidf.pkl"))
 joblib.dump(tfidf_matrix, os.path.join(MODELS_DIR, "tfidf_matrix.pkl"))
 joblib.dump(nn, os.path.join(MODELS_DIR, "KNN.pkl"))

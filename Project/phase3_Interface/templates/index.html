@@ -1,15 +1,74 @@
 {% extends "base.html" %}
-
-{% block title %}Home - Job Recommendation{% endblock %}
-
+{% block title %}
+AI Job Recommendation
+{% endblock %}
 {% block content %}
-<div class="text-center">
-    <h1>Career Path Explainer</h1>
-    <p>An AI and data-driven project that recommends the top 10 job titles suited to your current skills and identifies the skills you need to acquire to reach them.</p>
-    
-    <div style="margin-top: 30px;">
-        <a href="/try" class="btn btn-primary">Try the Project</a>
-        <a href="/details" class="btn btn-secondary">Project Details</a>
+
+<section id="home" class="section hero">
+    <div class="hero-content">
+        <h1>AI Job Recommendation System</h1>
+        <p>
+            Discover the most suitable job titles based on your skills
+            and identify the skills you need to improve.
+        </p>
+        <a href="#try-model" class="btn-primary">Try the Model</a>
     </div>
-</div>
+</section>
+
+<section id="try-model" class="section section-light">
+    <div class="container">
+        <h2>Try the Model</h2>
+        <p>Enter your skills one by one.</p>
+
+        <div class="skill-input-container">
+            <input type="text" id="skillInput" placeholder="Type a skill...">
+            <button onclick="addSkill()">Add</button>
+        </div>
+
+        <div id="tagsContainer" class="tags-container"></div>
+
+        <button id="submitBtn" class="recommend-btn" onclick="submitSkills()">Get Recommendations</button>
+
+        <div id="loading" class="loading">Loading...</div>
+        <div id="errorMessage" class="error-message"></div>
+    </div>
+</section>
+
+<section id="recommendation-section" class="section section-gray">
+    <div class="container">
+        <h2>Top 10 Recommended Jobs</h2>
+        <div id="resultsContainer" class="results-grid"></div>
+    </div>
+</section>
+
+<section id="project" class="section section-beige">
+    <div class="container">
+        <h2>Project Details</h2>
+
+        <h3>Overview</h3>
+        <p>This project recommends job titles
+            according to user skills using
+            TF-IDF and Nearest Neighbors.
+        </p>
+
+        <h3>Dataset</h3>
+        <p>LinkedIn Jobs and Skills Dataset.</p>
+
+        <h3>Methodology</h3>
+        <ul>
+            <li>Skill Cleaning</li>
+            <li>Semantic + Fuzzy Mapping</li>
+            <li>TF-IDF Vectorization</li>
+            <li>Nearest Neighbors</li>
+            <li>Skill Gap Analysis</li>
+        </ul>
+
+        <h3>Evaluation</h3>
+        <ul>
+            <li>Precision@5</li>
+            <li>MRR</li>
+        </ul>
+    </div>
+</section>
+
 {% endblock %}

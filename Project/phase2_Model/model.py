@@ -1,6 +1,8 @@
 import os
 import joblib
 import pandas as pd
+import ast
+import json
 
 # Load data and models -------------------
 
@@ -9,9 +11,14 @@ MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_DIR = os.path.join(BASE_DIR, "data")
 
 df = pd.read_csv(os.path.join(DATA_DIR, "clean_jobs.csv"))
+df["job_skills"] = df["job_skills"].apply(ast.literal_eval)
+
 tfidf = joblib.load(os.path.join(MODELS_DIR, "tfidf.pkl"))
 tfidf_matrix = joblib.load(os.path.join(MODELS_DIR, "tfidf_matrix.pkl"))
 nn = joblib.load(os.path.join(MODELS_DIR, "KNN.pkl"))
+
+with open(os.path.join(DATA_DIR, "skills.json"), "r", encoding="utf-8") as f:
+    skill_list = json.load(f)
 
 # -----------------------------------------
 def format_skill(skill):
@@ -37,7 +44,8 @@ def recommend_jobs(user_skills, top_n=10, gap_top_n=5, n_similar=30):
     job_indices = indices[0]
 
     batch_vectors = tfidf_matrix[job_indices]
-    _, batch_neighbors = nn.kneighbors(batch_vectors, n_neighbors=n_similar + 1)
+    n_neighbors = min(n_similar + 1, len(df))
+    _, batch_neighbors = nn.kneighbors(batch_vectors, n_neighbors=n_neighbors)
 
     user_skills_clean = {s.strip().lower() for s in user_skills}
 
@@ -49,7 +57,7 @@ def recommend_jobs(user_skills, top_n=10, gap_top_n=5, n_similar=30):
         similar_skills = (df.iloc[neighbors]["job_skills"].explode())
         top_skills = (similar_skills.value_counts().head(gap_top_n).index.tolist())
 
-        missing = sorted(set(s.lower() for s in top_skills) - user_skills_clean)
+        missing = [skill for skill in top_skills if skill.lower() not in user_skills_clean]
 
         results.append({
             "job_title": df.iloc[job_idx]["job_title"],
