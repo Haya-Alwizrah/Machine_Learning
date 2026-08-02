@@ -1,11 +1,12 @@
-import kagglehub
-import pandas as pd
-import ast
-import joblib
 import os
+import kagglehub
+import ast
+import joblib, json
+
+import pandas as pd
+
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.neighbors import NearestNeighbors
-import json
+from huggingface_hub import HfApi
 
 # Load dataset ---------------------------------------------------------
 
@@ -38,15 +39,10 @@ df["skills_text"] = df["job_skills"].apply(
 )
 
 # Train ------------------------------------------------------------
-
 tfidf = TfidfVectorizer(min_df=15)
 tfidf_matrix = tfidf.fit_transform(df["skills_text"])
 
-nn = NearestNeighbors(n_neighbors=10, metric="cosine")
-nn.fit(tfidf_matrix)
-
 # Save clean data and model --------------------------------------------------------
-
 BASE_DIR = os.path.dirname(__file__)
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -54,15 +50,42 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(MODELS_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 
-df.to_csv(os.path.join(DATA_DIR, "clean_jobs.csv"), index=False)
-skills = sorted({
-    skill
-    for skills in df["job_skills"]
-    for skill in skills
-})
+# data
+df = df[["job_title", "job_skills"]]
+df.to_parquet(
+    os.path.join(DATA_DIR, "clean_jobs.parquet"),
+    compression="snappy"
+)
+
+# all_skills
+skills = sorted({skill for skills in df["job_skills"] for skill in skills})
 with open(os.path.join(DATA_DIR, "skills.json"), "w", encoding="utf-8") as f:
     json.dump(skills, f, ensure_ascii=False, indent=4)
 
-joblib.dump(tfidf, os.path.join(MODELS_DIR, "tfidf.pkl"))
-joblib.dump(tfidf_matrix, os.path.join(MODELS_DIR, "tfidf_matrix.pkl"))
-joblib.dump(nn, os.path.join(MODELS_DIR, "KNN.pkl"))
+# tf-idf
+print(type(tfidf))
+print(hasattr(tfidf, "vocabulary_"))
+print(len(tfidf.vocabulary_))
+joblib.dump(tfidf, os.path.join(MODELS_DIR, "tfidf.pkl"), compress=3)
+
+# hugging face ----------------------
+api = HfApi()
+repo_id = "x-hayush/job-recommendation-model"
+
+files = [
+    (os.path.join(DATA_DIR, "clean_jobs.parquet"), "clean_jobs.parquet"),
+    (os.path.join(DATA_DIR, "skills.json"), "skills.json"),
+    (os.path.join(MODELS_DIR, "tfidf.pkl"), "tfidf.pkl"),
+]
+
+print("Uploading files to Hugging Face...")
+
+for local_path, remote_name in files:
+    api.upload_file(
+        path_or_fileobj=local_path,
+        path_in_repo=remote_name,
+        repo_id=repo_id,
+        repo_type="model",
+    )
+
+print("Upload completed successfully!")

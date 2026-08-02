@@ -4,6 +4,7 @@ import pandas as pd
 import ast
 import json
 from huggingface_hub import snapshot_download
+from sklearn.neighbors import NearestNeighbors
 
 # Load data and models -------------------
 
@@ -12,7 +13,16 @@ HF_DIR = os.path.join(BASE_DIR, "hf_files")
 # MODELS_DIR = os.path.join(BASE_DIR, "models")
 # DATA_DIR = os.path.join(BASE_DIR, "data")
 
-if not os.path.exists(os.path.join(HF_DIR, "KNN.pkl")):
+# -----------------------------------------
+def format_skill(skill):
+
+    skill = skill.strip().lower()
+    if skill == "r": return "lang_r"
+    if skill == "c": return "lang_c"
+    return skill.replace(" ", "_")
+
+# ---------------------------------------
+if not os.path.exists(os.path.join(HF_DIR, "tfidf.pkl")):
     print("Downloading model files from Hugging Face...")
     snapshot_download(
         repo_id="x-hayush/job-recommendation-model",
@@ -22,25 +32,20 @@ if not os.path.exists(os.path.join(HF_DIR, "KNN.pkl")):
     print("Download completed.")
 else:
     print("Using cached model files.")
-    
-df = pd.read_csv(os.path.join(HF_DIR, "clean_jobs.csv"))
-df["job_skills"] = df["job_skills"].apply(ast.literal_eval)
 
-tfidf = joblib.load(os.path.join(HF_DIR, "tfidf.pkl"))
-tfidf_matrix = joblib.load(os.path.join(HF_DIR, "tfidf_matrix.pkl"))
-nn = joblib.load(os.path.join(HF_DIR, "KNN.pkl"))
+# -----------------------------
+df = pd.read_parquet(os.path.join(HF_DIR, "clean_jobs.parquet"))
+df["skills_text"] = df["job_skills"].apply(lambda x: " ".join(format_skill(s) for s in x))
 
 with open(os.path.join(HF_DIR, "skills.json"), "r", encoding="utf-8") as f:
     skill_list = json.load(f)
 
-# -----------------------------------------
-def format_skill(skill):
+# ----------------------------------------
+tfidf = joblib.load(os.path.join(HF_DIR, "tfidf.pkl"))
+tfidf_matrix = tfidf.transform(df["skills_text"])
 
-    skill = skill.strip().lower()
-
-    if skill == "r": return "lang_r"
-    if skill == "c": return "lang_c"
-    return skill.replace(" ", "_")
+nn = NearestNeighbors(n_neighbors=10, metric="cosine")
+nn.fit(tfidf_matrix)
 
 # -----------------------------------------
 
