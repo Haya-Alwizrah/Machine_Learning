@@ -4,9 +4,10 @@ import ast
 import joblib, json
 
 import pandas as pd
+from huggingface_hub import HfApi
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from huggingface_hub import HfApi
+from sklearn.neighbors import NearestNeighbors
 
 # Load dataset ---------------------------------------------------------
 
@@ -42,6 +43,9 @@ df["skills_text"] = df["job_skills"].apply(
 tfidf = TfidfVectorizer(min_df=15)
 tfidf_matrix = tfidf.fit_transform(df["skills_text"])
 
+nn = NearestNeighbors(n_neighbors=10, metric="cosine")
+nn.fit(tfidf_matrix)
+
 # Save clean data and model --------------------------------------------------------
 BASE_DIR = os.path.dirname(__file__)
 MODELS_DIR = os.path.join(BASE_DIR, "models")
@@ -63,10 +67,9 @@ with open(os.path.join(DATA_DIR, "skills.json"), "w", encoding="utf-8") as f:
     json.dump(skills, f, ensure_ascii=False, indent=4)
 
 # tf-idf
-print(type(tfidf))
-print(hasattr(tfidf, "vocabulary_"))
-print(len(tfidf.vocabulary_))
 joblib.dump(tfidf, os.path.join(MODELS_DIR, "tfidf.pkl"), compress=3)
+joblib.dump(tfidf_matrix, os.path.join(MODELS_DIR, "tfidf_matrix.pkl"), compress=3)
+joblib.dump(nn, os.path.join(MODELS_DIR, "nn.pkl"), compress=3)
 
 # hugging face ----------------------
 api = HfApi()
@@ -76,6 +79,8 @@ files = [
     (os.path.join(DATA_DIR, "clean_jobs.parquet"), "clean_jobs.parquet"),
     (os.path.join(DATA_DIR, "skills.json"), "skills.json"),
     (os.path.join(MODELS_DIR, "tfidf.pkl"), "tfidf.pkl"),
+    (os.path.join(MODELS_DIR, "tfidf_matrix.pkl"), "tfidf_matrix.pkl"),
+    (os.path.join(MODELS_DIR, "nn.pkl"), "nn.pkl"),
 ]
 
 print("Uploading files to Hugging Face...")
