@@ -41,11 +41,9 @@ with open(os.path.join(HF_DIR, "skills.json"), "r", encoding="utf-8") as f:
     skill_list = json.load(f)
 
 # ----------------------------------------
-tfidf = joblib.load(os.path.join(HF_DIR, "tfidf.pkl"))
-tfidf_matrix = tfidf.transform(df["skills_text"])
-
-nn = NearestNeighbors(n_neighbors=10, metric="cosine")
-nn.fit(tfidf_matrix)
+tfidf        = joblib.load(os.path.join(HF_DIR, "tfidf.pkl"))
+tfidf_matrix = joblib.load(os.path.join(HF_DIR, "tfidf_matrix.pkl"))
+nn           = joblib.load(os.path.join(HF_DIR, "nn.pkl"))
 
 # -----------------------------------------
 
