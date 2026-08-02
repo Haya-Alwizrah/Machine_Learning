@@ -18,9 +18,9 @@ df = df.drop(columns=['job_title', 'company', 'job_location', 'first_seen', 'sea
 df = df.rename(columns={"job_title_c": "job_title", "job_skills_c": "job_skills"})
 df["job_skills"] = df["job_skills"].apply(ast.literal_eval)
 
-DEMO = False
+DEMO = True
 if DEMO:
-    df = df.sample(n=100000, random_state=42)
+    df = df.sample(n=500000, random_state=42)
 
 # Cleaning -------------------------------------------------------------------
 
