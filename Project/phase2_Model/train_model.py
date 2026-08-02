@@ -61,15 +61,10 @@ df.to_parquet(
     compression="snappy"
 )
 
-# all_skills
-skills = sorted({skill for skills in df["job_skills"] for skill in skills})
-with open(os.path.join(DATA_DIR, "skills.json"), "w", encoding="utf-8") as f:
-    json.dump(skills, f, ensure_ascii=False, indent=4)
-
 # tf-idf
-joblib.dump(tfidf, os.path.join(MODELS_DIR, "tfidf.pkl"), compress=3)
-joblib.dump(tfidf_matrix, os.path.join(MODELS_DIR, "tfidf_matrix.pkl"), compress=3)
-joblib.dump(nn, os.path.join(MODELS_DIR, "nn.pkl"), compress=3)
+joblib.dump(tfidf, os.path.join(MODELS_DIR, "tfidf.pkl"), compress=9)
+joblib.dump(tfidf_matrix, os.path.join(MODELS_DIR, "tfidf_matrix.pkl"), compress=9)
+joblib.dump(nn, os.path.join(MODELS_DIR, "nn.pkl"), compress=9)
 
 # hugging face ----------------------
 api = HfApi()
@@ -77,7 +72,6 @@ repo_id = "x-hayush/job-recommendation-model"
 
 files = [
     (os.path.join(DATA_DIR, "clean_jobs.parquet"), "clean_jobs.parquet"),
-    (os.path.join(DATA_DIR, "skills.json"), "skills.json"),
     (os.path.join(MODELS_DIR, "tfidf.pkl"), "tfidf.pkl"),
     (os.path.join(MODELS_DIR, "tfidf_matrix.pkl"), "tfidf_matrix.pkl"),
     (os.path.join(MODELS_DIR, "nn.pkl"), "nn.pkl"),
