@@ -15,8 +15,6 @@ HF_DIR = os.path.join(BASE_DIR, "hf_files")
 
 # -----------------------------------------
 def format_skill(skill):
-
-    skill = skill.strip().lower()
     if skill == "r": return "lang_r"
     if skill == "c": return "lang_c"
     return skill.replace(" ", "_")
@@ -35,10 +33,7 @@ else:
 
 # -----------------------------
 df = pd.read_parquet(os.path.join(HF_DIR, "clean_jobs.parquet"))
-df["skills_text"] = df["job_skills"].apply(lambda x: " ".join(format_skill(s) for s in x))
-
-with open(os.path.join(HF_DIR, "skills.json"), "r", encoding="utf-8") as f:
-    skill_list = json.load(f)
+skill_list = sorted({skill for skills in df["job_skills"] for skill in skills})
 
 # ----------------------------------------
 tfidf        = joblib.load(os.path.join(HF_DIR, "tfidf.pkl"))
@@ -55,15 +50,14 @@ def prepare_query(user_skills):
 
 def recommend_jobs(user_skills, top_n=10, gap_top_n=5, n_similar=30):
 
-    query_vec = prepare_query(user_skills)
+    user_skills_clean = {s.strip().lower() for s in user_skills}
+    query_vec = prepare_query(user_skills_clean)
     distances, indices = nn.kneighbors(query_vec, n_neighbors=top_n)
     job_indices = indices[0]
 
     batch_vectors = tfidf_matrix[job_indices]
     n_neighbors = min(n_similar + 1, len(df))
     _, batch_neighbors = nn.kneighbors(batch_vectors, n_neighbors=n_neighbors)
-
-    user_skills_clean = {s.strip().lower() for s in user_skills}
 
     results = []
     for row, job_idx, dist in zip(range(len(job_indices)), job_indices, distances[0]):
@@ -73,7 +67,7 @@ def recommend_jobs(user_skills, top_n=10, gap_top_n=5, n_similar=30):
         similar_skills = (df.iloc[neighbors]["job_skills"].explode())
         top_skills = (similar_skills.value_counts().head(gap_top_n).index.tolist())
 
-        missing = [skill for skill in top_skills if skill.lower() not in user_skills_clean]
+        missing = [skill for skill in top_skills if skill not in user_skills_clean]
 
         results.append({
             "job_title": df.iloc[job_idx]["job_title"],
