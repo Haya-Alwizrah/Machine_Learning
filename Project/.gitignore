@@ -1,9 +1,5 @@
-# Trained models
-phase2_Model/models/
-
-# Processed data
-phase2_Model/data/
-
-phase2_Model/hf_files/
-
 phase1_Model/json/
+
+phase2_Model/models/
+phase2_Model/data/
+phase2_Model/hf_files/
