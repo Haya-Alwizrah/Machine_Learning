@@ -141,10 +141,14 @@ function displayResults(results){
                 <h3>
                     ${job.job_title}
                 </h3>
+
+                <!--
                 <div class="similarity">
                     Similarity:
                     ${(job.similarity*100).toFixed(1)}%
                 </div>
+                -->
+
                 <h4>
                     Skill Gap
                 </h4>
